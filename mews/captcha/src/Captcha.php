@@ -346,11 +346,18 @@ class Captcha
         $hash = $this->hasher->make($key);
         if($this->encrypt) $hash = Crypt::encrypt($hash);
 
-        $this->session->put('captcha', [
+//        $this->session->put('captcha', [
+//            'sensitive' => $this->sensitive,
+//            'key' => $hash,
+//            'encrypt' => $this->encrypt
+//        ]);
+
+        Cache::put('captcha:'.session()->getId(), json_encode([
             'sensitive' => $this->sensitive,
             'key' => $hash,
-            'encrypt' => $this->encrypt
-        ]);
+            'encrypt' => $this->encrypt,
+            'value'=>$key
+        ]), 600);
 
         return [
             'value' => $bag,
@@ -468,18 +475,26 @@ class Captcha
      */
     public function check(string $value): bool
     {
-        if (!$this->session->has('captcha')) {
+//        if (!$this->session->has('captcha')) {
+//            return false;
+//        }
+//
+//        $key = $this->session->get('captcha.key');
+//        $sensitive = $this->session->get('captcha.sensitive');
+//        $encrypt = $this->session->get('captcha.encrypt');
+//
+//        if (!Cache::pull($this->get_cache_key($key))) {
+//            $this->session->remove('captcha');
+//            return false;
+//        }
+
+        if (!Cache::has('captcha:'.session()->getId())) {
             return false;
         }
-
-        $key = $this->session->get('captcha.key');
-        $sensitive = $this->session->get('captcha.sensitive');
-        $encrypt = $this->session->get('captcha.encrypt');
-
-        if (!Cache::pull($this->get_cache_key($key))) {
-            $this->session->remove('captcha');
-            return false;
-        }
+        $data = json_decode(Cache::get('captcha:'.session()->getId()));
+        $key = $data->key;
+        $sensitive = $data->sensitive;
+        $encrypt = $data->encrypt;
 
         if (!$sensitive) {
             $value = $this->str->lower($value);
