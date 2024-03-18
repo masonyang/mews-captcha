@@ -1,0 +1,5 @@
+array (
+  'key' => '$2y$10$0lryFtIxZrtvmXlPpmGShuPQMx9kbeY33BfBzAU3eE/GF/Z47blr6',
+  'sensitive' => false,
+  'encrypt' => false,
+)
